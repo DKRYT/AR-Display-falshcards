@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ZF Technology AR — Prototype v3</title>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Inter,Segoe UI,Arial,sans-serif}
+#hud{position:fixed;z-index:10;inset:0;pointer-events:none;color:#fff}.top{position:absolute;top:0;left:0;right:0;padding:14px 15px;background:linear-gradient(#00111ddd,transparent);display:flex;align-items:center;gap:10px}
+.zf{width:40px;height:40px;border:2px solid #fff;border-radius:50%;display:grid;place-items:center;font-weight:800}.meta b{display:block;font-size:16px}.meta span{font-size:11px;color:#b9d7e9;letter-spacing:.08em}
+.status{margin-left:auto;background:#061927cc;border:1px solid #ffffff35;border-radius:999px;padding:8px 11px;font-size:11px}
+.reticle{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:min(68vw,320px);aspect-ratio:1;border:1px solid #ffffff55;border-radius:22px;box-shadow:0 0 0 9999px #00000016}
+.reticle:before,.reticle:after{content:"";position:absolute;width:28px;height:28px;border-color:#6dd6ff;border-style:solid}.reticle:before{left:-2px;top:-2px;border-width:3px 0 0 3px;border-radius:12px 0 0 0}.reticle:after{right:-2px;bottom:-2px;border-width:0 3px 3px 0;border-radius:0 0 12px 0}
+.hint{position:absolute;left:50%;top:69%;transform:translateX(-50%);white-space:nowrap;font-size:12px;text-shadow:0 2px 6px #000}.panel{pointer-events:auto;position:absolute;left:10px;right:10px;bottom:12px;background:#051724e8;border:1px solid #315067;border-radius:18px;padding:13px;backdrop-filter:blur(12px)}
+.panel h2{font-size:18px;margin:0 0 4px}.panel p{font-size:12px;color:#aac3d3;margin:0 0 11px}.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.controls button{border:1px solid #315a75;background:#0c2a40;color:#fff;border-radius:11px;padding:11px 6px;font-weight:700;font-size:11px}.controls button.primary{background:#0067b1;border-color:#0e8ad8}
+#permissionHelp{display:none;position:fixed;z-index:30;inset:0;background:#05131eee;color:#fff;padding:30px;align-items:center;justify-content:center;text-align:center}#permissionHelp .card{max-width:420px;background:#0a2233;border:1px solid #315a75;border-radius:20px;padding:24px}#permissionHelp button{border:0;background:#0067b1;color:#fff;padding:12px 18px;border-radius:10px}
+</style></head>
+<body>
+<div id="hud"><div class="top"><div class="zf">ZF</div><div class="meta"><b id="techName">ZF Technology</b><span>AR EXPERIENCE · PROTOTYPE</span></div><div class="status" id="status">Looking for board…</div></div>
+<div class="reticle"></div><div class="hint">Point at the complete AR anchor on the flashboard</div>
+<div class="panel"><h2 id="panelName"></h2><p id="panelDesc"></p><div class="controls"><button class="primary" id="demoBtn">▶ HOW IT WORKS</button><button id="toggleBtn">TECH: ON</button><button id="explodeBtn">EXPLODED VIEW</button></div></div></div>
+<div id="permissionHelp"><div class="card"><h2>Camera access is required</h2><p>Allow camera permission, then point your phone at the AR anchor.</p><button onclick="location.reload()">Try camera again</button></div></div>
+<a-scene embedded vr-mode-ui="enabled:false" renderer="antialias:true;alpha:true;precision:medium" arjs="sourceType:webcam;facingMode:environment;trackingMethod:best;debugUIEnabled:false;">
+<a-marker id="marker" type="pattern" url="zf-tech-ar-anchor.patt" smooth="true" smoothCount="8" smoothTolerance="0.01" smoothThreshold="4"><a-entity id="root"></a-entity></a-marker><a-entity camera></a-entity></a-scene>
+<script>
+const DATA={
+onguardmax:{name:"OnGuardMAX",desc:"Collision mitigation & object detection",color:"#5dd6ff"},
+escsmart:{name:"ESCsmart",desc:"Electronic stability control",color:"#75e6a4"},
+absebs:{name:"ABS / EBS",desc:"Electronically controlled braking",color:"#ffcc66"},
+traxon:{name:"TraXon",desc:"Automated transmission",color:"#b4a0ff"},
+onlane:{name:"OnLane Alert",desc:"Lane departure warning",color:"#66d7ff"},
+axledamper:{name:"Axles & Dampers",desc:"Chassis control & ride",color:"#f28bb4"}};
+const tech=new URLSearchParams(location.search).get("tech")||"onguardmax",cfg=DATA[tech]||DATA.onguardmax;
+techName.textContent=cfg.name;panelName.textContent=cfg.name;panelDesc.textContent=cfg.desc;
+function E(tag,a={},p){const e=document.createElement(tag);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));(p||root).appendChild(e);return e}
+function T(v,pos,scale){return E("a-text",{value:v,position:pos,align:"center",color:"#fff",scale})}
+function build(){
+ E("a-cylinder",{position:"0 .02 0",radius:".72",height:".035",color:"#082032",opacity:".88"});
+ E("a-ring",{position:"0 .045 0",rotation:"-90 0 0",radiusInner:".54",radiusOuter:".57",color:cfg.color,opacity:".8"});
+ const g=E("a-entity",{id:"product",position:"0 .52 0"});
+ if(tech==="onguardmax"){
+  E("a-box",{width:"1.05",height:".44",depth:".52",color:"#17232b",metalness:".6"},g);E("a-box",{position:"0 0 .28",width:".56",height:".28",depth:".08",color:"#05090d"},g);
+  E("a-cylinder",{position:"0 0 .34",rotation:"90 0 0",radius:".11",height:".07",color:cfg.color},g);E("a-cone",{id:"effect",position:"0 .02 .92",rotation:"90 0 0",radiusBottom:".75",radiusTop:".10",height:"1.25",color:cfg.color,opacity:".20",transparent:"true"},g);
+  E("a-sphere",{id:"alert",position:"0 .02 1.35",radius:".12",color:"#ff5353",visible:"false"},g);
+ }else if(tech==="escsmart"){
+  E("a-box",{width:".86",height:".36",depth:".62",color:"#202a31",metalness:".5"},g);E("a-torus",{id:"effect",position:"0 .45 0",rotation:"90 0 0",radius:".55",radiusTubular:".025",arc:"300",color:cfg.color},g);
+ }else if(tech==="absebs"){
+  E("a-cylinder",{rotation:"90 0 0",radius:".38",height:".12",color:"#77838c",metalness:".8"},g);E("a-cylinder",{rotation:"90 0 0",radius:".18",height:".17",color:"#1f2a32"},g);E("a-box",{position:".32 .04 .06",width:".18",height:".38",depth:".22",color:"#293945"},g);E("a-ring",{id:"effect",position:"0 0 .09",radiusInner:".43",radiusOuter:".46",color:cfg.color},g);
+ }else if(tech==="traxon"){
+  E("a-box",{width:"1",height:".48",depth:".62",color:"#27323a",metalness:".7"},g);[-.28,0,.28].forEach((x,i)=>E("a-torus",{position:x+" .02 .34",rotation:"90 0 0",radius:".13",radiusTubular:".035",color:i===1?cfg.color:"#9ba8b0",id:i===1?"effect":""},g));
+ }else if(tech==="onlane"){
+  E("a-box",{width:".72",height:".32",depth:".46",color:"#1c2830"},g);E("a-cylinder",{position:"0 0 .25",rotation:"90 0 0",radius:".10",height:".08",color:cfg.color},g);E("a-plane",{id:"effect",position:"0 -.25 .8",rotation:"-90 0 0",width:"1.3",height:"1.7",color:cfg.color,opacity:".14",transparent:"true"},g);
+ }else{
+  E("a-cylinder",{rotation:"0 0 90",radius:".10",height:"1.15",color:"#38454e",metalness:".8"},g);[-.48,.48].forEach(x=>E("a-cylinder",{position:x+" 0 0",rotation:"90 0 0",radius:".28",height:".10",color:"#111820"},g));[-.30,.30].forEach(x=>E("a-cylinder",{position:x+" .30 0",radius:".055",height:".62",color:cfg.color,id:x>0?"effect":""},g));
+ }
+ T(cfg.name,"0 1.14 0",".42 .42 .42");T("Move around the board to inspect","0 1.01 0",".20 .20 .20");
+}
+build();
+marker.addEventListener("markerFound",()=>status.textContent="Board locked ✓");marker.addEventListener("markerLost",()=>status.textContent="Looking for board…");
+let enabled=true,exploded=false;
+toggleBtn.onclick=()=>{enabled=!enabled;toggleBtn.textContent="TECH: "+(enabled?"ON":"OFF");const fx=document.getElementById("effect");if(fx)fx.setAttribute("visible",enabled);const a=document.getElementById("alert");if(a)a.setAttribute("visible",false)};
+explodeBtn.onclick=()=>{exploded=!exploded;explodeBtn.textContent=exploded?"ASSEMBLE":"EXPLODED VIEW";const p=document.getElementById("product");if(p)p.setAttribute("scale",exploded?"1.25 1.25 1.25":"1 1 1")};
+demoBtn.onclick=()=>{if(!enabled)return;const fx=document.getElementById("effect"),a=document.getElementById("alert"),p=document.getElementById("product");if(fx)fx.setAttribute("animation__pulse","property:scale;from:1 1 1;to:1.28 1.28 1.28;dir:alternate;loop:3;dur:420");if(a){a.setAttribute("visible",true);a.setAttribute("animation__warn","property:scale;from:.7 .7 .7;to:1.6 1.6 1.6;dir:alternate;loop:5;dur:250");setTimeout(()=>a.setAttribute("visible",false),2800)}if(p)p.setAttribute("animation__demo","property:rotation;from:0 0 0;to:0 360 0;dur:2200;easing:easeInOutQuad")};
+setTimeout(()=>{const v=document.querySelector("video");if(!v||v.readyState<2)permissionHelp.style.display="flex"},7000);
+</script></body></html>

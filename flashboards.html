@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZF Technology AR Flashboards — Prototype v3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--zf:#0067b1;--deep:#04101c;--soft:#eef5fa}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:#06111d;color:#fff;overflow:hidden}
+header{height:74px;display:flex;align-items:center;gap:18px;padding:0 28px;border-bottom:1px solid #193047;background:#071522}
+.brand{width:50px;height:50px;border:3px solid #fff;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:20px}
+header h1{font-size:18px;margin:0;letter-spacing:.08em;text-transform:uppercase}header p{margin:3px 0 0;color:#9eb5c8;font-size:12px}
+.actions{margin-left:auto;display:flex;gap:8px}button,input{font:inherit}button{border:1px solid #31516d;background:#0d2234;color:#fff;border-radius:10px;padding:10px 13px;cursor:pointer}button:hover{background:#12304a}.primary{background:var(--zf);border-color:var(--zf)}
+main{height:calc(100vh - 74px);display:grid;grid-template-columns:230px 1fr}nav{padding:18px 12px;border-right:1px solid #193047;background:#071522;overflow:auto}
+.techbtn{width:100%;text-align:left;margin-bottom:8px;padding:13px;border-radius:12px;border:1px solid transparent;background:transparent;color:#acc0d0}.techbtn.active{background:#0e2940;border-color:#28628e;color:#fff}
+.stage{display:grid;place-items:center;padding:22px;background:radial-gradient(circle at 70% 20%,#123553 0,#071522 48%,#050d15 100%)}
+.board{width:min(1180px,95%);aspect-ratio:16/9;background:#f8fbfd;color:#08131e;border-radius:26px;box-shadow:0 40px 80px #0009;overflow:hidden;display:grid;grid-template-columns:1.2fr .8fr;position:relative}
+.left{padding:54px 58px;background:linear-gradient(145deg,#fff 0,#f4f9fc 70%,#eaf5fb 100%);position:relative}.kicker{color:var(--zf);font-weight:800;letter-spacing:.16em;font-size:14px}
+.title{font-size:68px;line-height:.95;margin:22px 0 16px;letter-spacing:-.045em}.desc{font-size:24px;line-height:1.35;max-width:700px;color:#31495d}
+.techline{margin-top:35px;display:flex;gap:10px;flex-wrap:wrap}.pill{border:1px solid #bdd2df;background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;color:#32526a}
+.product{position:absolute;right:-65px;bottom:-70px;width:420px;height:310px;opacity:.97;transform:rotate(-7deg)}.product .housing{position:absolute;left:90px;top:80px;width:250px;height:145px;border-radius:28px;background:linear-gradient(145deg,#1d2a34,#0b1014);box-shadow:inset 0 0 0 5px #354653,0 25px 40px #25445a55}
+.product .face{position:absolute;left:142px;top:112px;width:110px;height:80px;border-radius:18px;background:#050709;border:5px solid #667a87}.product .lens{position:absolute;left:178px;top:132px;width:42px;height:42px;border-radius:50%;border:5px solid #53c8ff;box-shadow:0 0 25px #39bafc}
+.product .beam{position:absolute;left:-30px;top:145px;width:150px;height:90px;clip-path:polygon(100% 50%,0 0,0 100%);background:linear-gradient(90deg,#44c8ff18,#44c8ff88);filter:drop-shadow(0 0 8px #44c8ff)}
+.right{background:linear-gradient(145deg,#0067b1,#003d70);padding:42px;display:flex;flex-direction:column;color:#fff}.logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:20px}.logoCircle{width:54px;height:54px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center}
+.right h3{font-size:24px;margin:35px 0 8px}.right .steps{font-size:17px;color:#d8efff;line-height:1.7}.scan{margin-top:auto;display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:end}
+.qrwrap{background:#fff;padding:10px;border-radius:14px;width:150px;height:150px;display:grid;place-items:center}.qrwrap img,.qrwrap canvas{max-width:130px!important;max-height:130px!important}.scan strong{font-size:19px}.scan small{display:block;color:#cce8f7;margin-top:7px;line-height:1.45}
+.anchorrow{margin-top:17px;display:flex;align-items:center;gap:13px;background:#ffffff12;border:1px solid #ffffff30;padding:12px;border-radius:14px}.anchorrow img{width:92px;height:92px;background:#fff;border-radius:8px}.anchorrow b{display:block}.anchorrow span{font-size:12px;color:#d6ebf7}
+.badge{position:absolute;left:58px;bottom:36px;font-size:12px;color:#597285}.setup{position:fixed;z-index:20;right:22px;top:82px;background:#0b2032;border:1px solid #31516d;border-radius:13px;padding:12px;display:none;box-shadow:0 14px 30px #0007}
+.setup input{width:410px;max-width:70vw;background:#06121e;color:#fff;border:1px solid #31516d;border-radius:9px;padding:10px}.note{font-size:11px;color:#8fa6b8;margin-top:6px}
+@media(max-width:900px){main{grid-template-columns:1fr}nav{display:none}.board{width:96%;grid-template-columns:1fr}.right{display:none}.title{font-size:48px}}
+</style></head>
+<body>
+<header>
+<div class="brand">ZF</div><div><h1>Technology AR Flashboards</h1><p>Prototype v3 · Desktop board → normal phone camera → QR → browser AR</p></div>
+<div class="actions"><button onclick="toggleSetup()">Set mobile URL</button><button onclick="window.print()">Print board</button><button class="primary" onclick="nextTech()">Next technology →</button></div>
+</header>
+<div class="setup" id="setup"><div style="font-weight:700;margin-bottom:8px">Hosted HTTPS base URL</div><input id="baseInput" placeholder="https://your-site.example/ZF_AR_Flashboards_v3/"><button onclick="saveBase()">Apply</button><div class="note">When hosted normally, this is detected automatically.</div></div>
+<main><nav id="nav"></nav><section class="stage"><div class="board">
+<div class="left"><div class="kicker" id="category"></div><div class="title" id="title"></div><div class="desc" id="desc"></div>
+<div class="techline"><span class="pill">WHAT IS IT?</span><span class="pill">HOW IT WORKS</span><span class="pill">TECH OFF / ON</span></div>
+<div class="product"><div class="beam"></div><div class="housing"></div><div class="face"></div><div class="lens"></div></div>
+<div class="badge">Illustrative product visualization · Replace with approved ZF 3D/CAD for production</div></div>
+<div class="right"><div class="logo"><span class="logoCircle">ZF</span><span>REDEFINING MOBILITY</span></div>
+<h3>Experience this technology in AR</h3><div class="steps">1 · Open your normal phone camera<br>2 · Scan the QR code<br>3 · Allow camera in the browser<br>4 · Point the phone at the AR anchor below</div>
+<div class="scan"><div class="qrwrap" id="qrcode"></div><div><strong>SCAN TO OPEN AR</strong><small id="qrurl"></small></div></div>
+<div class="anchorrow"><img src="zf-tech-ar-anchor.png"><div><b>AR ANCHOR</b><span>Keep the complete square visible. The 3D technology is anchored here.</span></div></div>
+</div></div></section></main>
+<script>
+const TECHS=[{"id": "onguardmax", "name": "OnGuardMAX", "desc": "Collision mitigation & object detection", "category": "SAFETY"}, {"id": "escsmart", "name": "ESCsmart", "desc": "Electronic stability control for commercial vehicles", "category": "STABILITY"}, {"id": "absebs", "name": "ABS / EBS", "desc": "Electronically controlled braking", "category": "BRAKING"}, {"id": "traxon", "name": "TraXon", "desc": "Automated commercial-vehicle transmission", "category": "POWERTRAIN"}, {"id": "onlane", "name": "OnLane Alert", "desc": "Lane departure warning assistance", "category": "ADAS"}, {"id": "axledamper", "name": "Axles & Dampers", "desc": "Chassis technology for control and ride", "category": "CHASSIS"}];let idx=0;const nav=document.getElementById('nav');
+TECHS.forEach((t,i)=>{const b=document.createElement('button');b.className='techbtn';b.textContent=t.name;b.onclick=()=>show(i);nav.appendChild(b);});
+function currentBase(){const saved=localStorage.getItem('zfArBase');if(saved)return saved.endsWith('/')?saved:saved+'/';if(location.protocol==='http:'||location.protocol==='https:')return location.href.split('flashboards.html')[0].split('?')[0];return 'https://YOUR-HTTPS-HOST/';}
+function renderQR(t){const u=currentBase()+'ar.html?tech='+encodeURIComponent(t.id);document.getElementById('qrcode').innerHTML='';new QRCode(document.getElementById('qrcode'),{text:u,width:130,height:130,correctLevel:QRCode.CorrectLevel.M});document.getElementById('qrurl').textContent=u.includes('YOUR-HTTPS-HOST')?'Set your HTTPS URL above before scanning.':u;}
+function show(i){idx=i;const t=TECHS[i];document.getElementById('category').textContent=t.category+' TECHNOLOGY';document.getElementById('title').textContent=t.name;document.getElementById('desc').textContent=t.desc;[...nav.children].forEach((e,n)=>e.classList.toggle('active',n===i));renderQR(t);}
+function nextTech(){show((idx+1)%TECHS.length)}function toggleSetup(){const e=document.getElementById('setup');e.style.display=e.style.display==='block'?'none':'block';document.getElementById('baseInput').value=localStorage.getItem('zfArBase')||currentBase()}
+function saveBase(){localStorage.setItem('zfArBase',document.getElementById('baseInput').value.trim());renderQR(TECHS[idx]);toggleSetup()}show(0);
+</script></body></html>
