@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#06131f">
+<title>ZF AXTrax 2 LF — Camera AR</title>
+<style>
+:root{--zf:#0067b1;--glass:rgba(4,18,30,.76);--line:rgba(255,255,255,.20)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Inter,Segoe UI,Arial,sans-serif}
+video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+#stage{position:fixed;inset:0;overflow:hidden;touch-action:none}
+#productWrap{
+ position:absolute;left:50%;top:47%;
+ transform:translate(-50%,-50%) scale(1) rotate(0deg);
+ transform-origin:center;width:min(94vw,900px);touch-action:none;cursor:grab;
+ filter:drop-shadow(0 24px 34px rgba(0,0,0,.58))
+}
+#product{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none;pointer-events:none}
+#shadow{position:absolute;left:50%;bottom:3%;transform:translateX(-50%);width:68%;height:7%;border-radius:50%;background:rgba(0,0,0,.3);filter:blur(15px);z-index:-1}
+.topbar{position:fixed;z-index:20;top:0;left:0;right:0;padding:max(12px,env(safe-area-inset-top)) 14px 12px;display:flex;align-items:center;gap:10px;background:linear-gradient(rgba(0,12,22,.82),rgba(0,12,22,0));color:#fff;pointer-events:none}
+.logo{width:42px;height:42px;border:2px solid #fff;border-radius:50%;display:grid;place-items:center;font-weight:800}.title b{display:block;font-size:16px}.title span{font-size:10px;letter-spacing:.12em;color:#cce6f7}
+.badge{margin-left:auto;background:rgba(2,27,44,.75);border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:10px}
+.guide{position:fixed;z-index:8;left:50%;top:47%;transform:translate(-50%,-50%);width:min(90vw,760px);aspect-ratio:1.6/1;border:1px dashed rgba(123,214,255,.40);border-radius:28px;pointer-events:none}
+.guide:before,.guide:after{content:"";position:absolute;width:34px;height:34px;border-color:#68d6ff;border-style:solid}.guide:before{left:-2px;top:-2px;border-width:3px 0 0 3px;border-radius:17px 0 0 0}.guide:after{right:-2px;bottom:-2px;border-width:0 3px 3px 0;border-radius:0 0 17px 0}
+.controls{position:fixed;z-index:30;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:12px;color:#fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.info{display:flex;align-items:end;gap:10px;margin-bottom:10px}.info h1{font-size:18px;margin:0}.info p{font-size:11px;color:#bfd3df;margin:3px 0 0}.info small{margin-left:auto;color:#91b2c6;font-size:9px;text-align:right}
+.row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+button{border:1px solid #31546e;background:#0a293e;color:#fff;border-radius:11px;padding:11px 5px;font:700 10px/1.1 Inter,Segoe UI,Arial;min-height:42px}
+button.primary{background:var(--zf);border-color:#1886d1}button:active{transform:scale(.98)}
+#start{position:fixed;z-index:100;inset:0;background:radial-gradient(circle at 70% 20%,#123753,#06131f 60%,#02070b);color:#fff;display:grid;place-items:center;padding:24px}
+.card{width:min(430px,94vw);background:#071b2a;border:1px solid #274b66;border-radius:24px;padding:26px;box-shadow:0 30px 80px #0008}
+.biglogo{width:64px;height:64px;border:3px solid #fff;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:25px;margin-bottom:24px}
+.card h1{font-size:28px;line-height:1.05;margin:0 0 10px}.card p{color:#b7ccda;line-height:1.5;font-size:14px}.card button{width:100%;font-size:14px;padding:14px;background:var(--zf);border:0;margin-top:12px}
+.privacy{font-size:10px!important;color:#7997aa!important;margin-top:14px!important}
+#error{display:none;color:#ffd1d1;background:#5a1010;border-radius:10px;padding:10px;margin-top:12px;font-size:12px}
+.hint{position:fixed;z-index:12;left:50%;bottom:154px;transform:translateX(-50%);color:#fff;font-size:11px;background:#031521aa;border:1px solid #ffffff1f;border-radius:999px;padding:8px 12px;white-space:nowrap;pointer-events:none}
+@media(min-width:800px){.controls{left:50%;right:auto;transform:translateX(-50%);width:720px}}
+</style>
+</head>
+<body>
+<div id="start">
+  <div class="card">
+    <div class="biglogo">ZF</div>
+    <div style="font-size:11px;letter-spacing:.15em;color:#72cfff;margin-bottom:8px">CAMERA AR PRODUCT VIEWER</div>
+    <h1>AXTrax 2 LF</h1>
+    <p>View the AXTrax 2 LF product clearly over your live mobile camera. Drag it, resize it and rotate it in your environment.</p>
+    <button id="startBtn">Start camera AR</button>
+    <div id="error"></div>
+    <p class="privacy">Camera is used for the live view only. Microphone is not requested. This prototype does not record or upload camera video.</p>
+  </div>
+</div>
+
+<video id="camera" autoplay muted playsinline></video>
+
+<div id="stage">
+  <div id="productWrap">
+    <div id="shadow"></div>
+    <img id="product" src="axtrax2lf-product.png" alt="ZF AXTrax 2 LF product visual">
+  </div>
+</div>
+
+<div class="guide"></div>
+
+<div class="topbar">
+  <div class="logo">ZF</div>
+  <div class="title"><b>AXTrax 2 LF</b><span>CAMERA AR · PRODUCT VIEW</span></div>
+  <div class="badge">LIVE CAMERA</div>
+</div>
+
+<div class="hint">Drag product · Pinch to resize · Two-finger twist to rotate</div>
+
+<div class="controls">
+  <div class="info">
+    <div><h1>AXTrax 2 LF</h1><p>High-clarity product visualization in camera AR</p></div>
+    <small>Source visual preserved<br>Illustrative AR placement</small>
+  </div>
+  <div class="row">
+    <button class="primary" id="bigger">＋ SIZE</button>
+    <button id="smaller">− SIZE</button>
+    <button id="rotate">↻ ROTATE</button>
+    <button id="reset">RESET</button>
+  </div>
+</div>
+
+<script>
+const video=document.getElementById('camera');
+const wrap=document.getElementById('productWrap');
+const start=document.getElementById('start');
+const errorBox=document.getElementById('error');
+let stream=null;
+let state={x:0,y:0,scale:1,rotation:0};
+let pointers=new Map();
+let gestureStart=null;
+
+function render(){
+ wrap.style.transform=`translate(calc(-50% + ${state.x}px),calc(-50% + ${state.y}px)) scale(${state.scale}) rotate(${state.rotation}deg)`;
+}
+function clamp(v){return Math.max(.32,Math.min(2.8,v))}
+async function startCamera(){
+ try{
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error("Camera API unavailable. Open this page over HTTPS in Chrome, Safari or Edge.");
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false});
+  video.srcObject=stream;
+  await video.play();
+  start.style.display='none';
+ }catch(err){
+  errorBox.style.display='block';
+  errorBox.textContent=err.message||"Camera permission was denied.";
+ }
+}
+startBtn.onclick=startCamera;
+bigger.onclick=()=>{state.scale=clamp(state.scale*1.15);render()};
+smaller.onclick=()=>{state.scale=clamp(state.scale/1.15);render()};
+rotate.onclick=()=>{state.rotation=(state.rotation+15)%360;render()};
+reset.onclick=()=>{state={x:0,y:0,scale:1,rotation:0};render()};
+
+wrap.addEventListener('pointerdown',e=>{
+ wrap.setPointerCapture(e.pointerId);
+ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(pointers.size===1){
+  const p=[...pointers.values()][0];
+  gestureStart={type:'drag',x:p.x,y:p.y,sx:state.x,sy:state.y};
+ }else if(pointers.size===2){
+  const [a,b]=[...pointers.values()];
+  gestureStart={type:'pinch',dist:Math.hypot(b.x-a.x,b.y-a.y),angle:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI,scale:state.scale,rotation:state.rotation};
+ }
+});
+wrap.addEventListener('pointermove',e=>{
+ if(!pointers.has(e.pointerId))return;
+ pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(pointers.size===1&&gestureStart?.type==='drag'){
+  const p=[...pointers.values()][0];
+  state.x=gestureStart.sx+(p.x-gestureStart.x);
+  state.y=gestureStart.sy+(p.y-gestureStart.y);
+  render();
+ }else if(pointers.size===2){
+  const [a,b]=[...pointers.values()];
+  if(gestureStart?.type!=='pinch'){
+   gestureStart={type:'pinch',dist:Math.hypot(b.x-a.x,b.y-a.y),angle:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI,scale:state.scale,rotation:state.rotation};
+  }
+  const dist=Math.hypot(b.x-a.x,b.y-a.y);
+  const angle=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI;
+  state.scale=clamp(gestureStart.scale*(dist/gestureStart.dist));
+  state.rotation=gestureStart.rotation+(angle-gestureStart.angle);
+  render();
+ }
+});
+function release(e){
+ pointers.delete(e.pointerId);
+ if(pointers.size===0){gestureStart=null}
+ else if(pointers.size===1){
+  const p=[...pointers.values()][0];
+  gestureStart={type:'drag',x:p.x,y:p.y,sx:state.x,sy:state.y};
+ }
+}
+wrap.addEventListener('pointerup',release);
+wrap.addEventListener('pointercancel',release);
+
+window.addEventListener('pagehide',()=>{if(stream)stream.getTracks().forEach(t=>t.stop())});
+render();
+</script>
+</body>
+</html>
